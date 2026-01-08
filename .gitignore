@@ -1,0 +1,10 @@
+# Ignorar a pasta dos dados (são grandes e descarregam-se sozinhos)
+data/
+
+# Ignorar ficheiros temporários do Python
+__pycache__/
+*.pyc
+
+# Ignorar pastas de ambiente virtual (se tiveres)
+.venv/
+env/
