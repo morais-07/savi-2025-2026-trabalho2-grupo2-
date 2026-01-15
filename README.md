@@ -1,18 +1,56 @@
-# Task 1: Digit Classification (MNIST)
+# Table of Contents
 
-## Objective
+- [Introduction](#introduction)
+- [Datasets Used](#datasets-used)
+- [Libraries Used](#libraries-used)
+- [Installation](#installation)
+- [Code Explanation](#code-explanation)
+- [Authors](#authors)
+
+---
+
+## Introduction
+
+COMPLETAR
+
+---
+
+## Datasets Used
+
+COMPLETAR
+
+---
+
+## Libraries Used
+
+COMPLETAR
+
+---
+
+## Instalation
+
+COMPLETAR
+
+---
+
+
+# Code Explanation
+
+## Task 1: Digit Classification (MNIST)
+
+### Objective
 The goal of this task is to develop and train a **Convolutional Neural Network (CNN)** capable of classifying handwritten digits (0–9) from the **MNIST dataset**.  
 This model serves as the **backbone** for subsequent object detection tasks.
 
 ---
 
-## Deliverables
+### Deliverables
 - `main_classification.py` – training and evaluation pipeline  
 - `model.py` – CNN architecture definition  
 
 ---
 
-### 1. Network Architecture (`ModelBetterCNN`)
+#### 1. Network Architecture (`ModelBetterCNN`)
 The model utilizes a deeper CNN architecture enhanced with **Batch Normalization** to accelerate convergence and stabilize training. The data flow is structured into three convolutional blocks followed by a classification head:
 
 * **Feature Extraction Blocks:**
@@ -35,7 +73,7 @@ The model utilizes a deeper CNN architecture enhanced with **Batch Normalization
     * **Dropout:** **50% probability** (p=0.5) to aggressively prevent overfitting.
     * **Output Layer:** Linear layer producing 10 logits (classes 0-9).
 
-### 2. Training Configuration
+#### 2. Training Configuration
 * **Optimizer:** `[SGD or Adam - Check your terminal output]`
 * **Loss Function:** CrossEntropyLoss
 * **Learning Rate:** `[INSERT LR]`
@@ -44,7 +82,7 @@ The model utilizes a deeper CNN architecture enhanced with **Batch Normalization
 
 ---
 
-## Quantitative Results
+### Quantitative Results
 
 The model was evaluated on the **10,000-image MNIST test set**.  
 Detailed per-class performance is shown below:
@@ -67,7 +105,7 @@ Detailed per-class performance is shown below:
 
 ---
 
-## Visual Evaluation — Confusion Matrix
+### Visual Evaluation — Confusion Matrix
 
 The confusion matrix highlights the model’s strong classification performance.  
 
