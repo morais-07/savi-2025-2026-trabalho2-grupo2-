@@ -257,15 +257,13 @@ class Trainer():
                 predicted_classes.extend(batch_predicted_classes)
 
         # -----------------------------------------
-        # 2. TAREFA 1: Avaliação com Sklearn (NOVO)
+        # TAREFA 1: Avaliação com Sklearn (NOVO)
         # -----------------------------------------
         
-
         # ------------------------------------------
         # Matriz de Confusão
         # -----------------------------------------
         cm = confusion_matrix(gt_classes, predicted_classes)
-
 
         # -----------------------------------------
         # Relatório de Classificação (Precision, Recall, F1-Score)
@@ -275,9 +273,8 @@ class Trainer():
         print("="*60)
         print(classification_report(gt_classes, predicted_classes, digits=4)) # digits = x, para x casas decimais
 
-
         # -----------------------------------------
-        # Desenhar a Matriz (Adaptado)
+        # Desenhar a Matriz de Confusão
         # -----------------------------------------
         plt.figure(2, figsize=(10, 8)) # Cria a figura 
         class_names = [str(i) for i in range(10)] # Classes 0-9
@@ -299,7 +296,6 @@ class Trainer():
         plt.savefig(save_path)
         print(f"Matriz de confusão guardada em: {save_path}")
 
-
         # -----------------------------------------
         # Guardar estatísticas em JSON
         # -----------------------------------------
@@ -310,7 +306,7 @@ class Trainer():
         with open(json_filename, 'w') as f:
             json.dump(report_dict, f, indent=4)
         
-        print("Estatísticas (incluindo F1) guardadas em statistics.json")
+        print("Estatísticas guardadas em statistics.json")
 
     def getPrecisionRecall(self, TPs, FPs, FNs):
 

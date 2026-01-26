@@ -79,20 +79,9 @@ def main():
     # Create the experiment
     # ------------------------------------
 
-    # VERIFICAR NO FINAL SE VALE A PENA CRIAR ESTAS PASTAS COM O NOME DA DATA
-    # experiment_name = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    # experiment_name = datetime.today().strftime('%Y-%m-%d %H')  # same experiment every hour
-    # experiment_name = datetime.today().strftime('%Y-%m-%d %H')  # same experiment every hour
-    # args['experiment_full_name'] = os.path.join(
-    #     args['experiment_path'], experiment_name)
     args['experiment_full_name'] = args['experiment_path']
 
     print('Starting experiment: ' + args['experiment_full_name'])
-
-    # VERIFICAR SE É MESMO NECESSÁRIO ISTO COMENTADO - FOI COMENTADO PARA NÃO APAGAR OS RESULTADOS, MAS PODE SER ÚTIL PARA OS APAGAR AUTOMATICAMENTE
-    # if os.path.exists(args['experiment_full_name']):
-    #     shutil.rmtree(args['experiment_full_name'])
-    #     print('Experiment folder already exists. Deleting to start fresh.')
 
     os.makedirs(args['experiment_full_name'], exist_ok=True)
 
