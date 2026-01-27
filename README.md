@@ -11,7 +11,16 @@
 
 ## Introduction
 
-COMPLETAR
+This project marks a transition from **classical computer vision techniques** to the domain of **Deep Learning**. While previous work focused on geometry-based methods and image registration, this assignment aims to bridge the gap between **simple image classification** and **complex object detection**.
+
+Using the **PyTorch** framework, the project evolves incrementally through **four main stages**. It begins with the design and optimization of a **Convolutional Neural Network (CNN)** to achieve high classification accuracy on the standard **MNIST dataset**. Subsequently, the task escalates to a more realistic object detection scenario by generating a **synthetic dataset of scenes** containing multiple, randomly scattered handwritten digits.
+
+Finally, two distinct detection strategies are explored and compared:
+- A **naive Sliding Window** approach  
+- An **Advanced Detector (FNC)** based on an integrated deep learning architecture  
+
+The comparison focuses on the trade-offs between **computational efficiency**, **detection accuracy**, and **overall robustness**, highlighting the strengths and limitations of each method.
+
 
 ---
 
