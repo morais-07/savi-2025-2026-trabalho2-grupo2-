@@ -243,5 +243,5 @@ Below is a grid with visual results, where red boxes represent model predictions
   <img src="Photos_README/final_grid_view.png" alt="Task3" width="450"/>
 </p>
 <p align="center">
-  <em>Figure 1 – Confusion matrix of the CNN model on the MNIST test set.</em>
+  <em>Figure 2 - 9 random images of the Sliding Windows approach.</em>
 </p>
