@@ -61,8 +61,6 @@ For this project, we focused on generating Version A and Version D. Version A wa
 * **Total Generated Images:** 10,000 (Train) / 2,000 (Test).
 * **Class Balance:** The generator ensures a uniform distribution of digits 0-9.
 
-> **Note:** See the `results/` folder for mosaic visualizations of the generated scenes with ground truth bounding boxes.
-
 ---
 
 ## Libraries Used
