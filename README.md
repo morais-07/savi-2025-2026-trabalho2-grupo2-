@@ -76,21 +76,43 @@ This project is built using **Python** and relies on the following libraries for
 * **TQDM:** A utility library that provides real-time progress bars for training loops and dataset generation.
 * **NumPy:** The fundamental package for numerical array manipulation, acting as a bridge between PyTorch tensors and visualization libraries.
 
-### Installation
+## Installation
 
-To install all necessary dependencies, run the following command in your terminal:
+To run this project locally, follow these steps.
 
-```bash
-pip install torch torchvision scikit-learn tqdm seaborn matplotlib numpy pillow
-```
+1.  **Clone the Repository**
+
+    ```bash
+    git clone [https://github.com/morais-07/savi-2025-2026-trabalho2-grupoX.git](https://github.com/morais-07/savi-2025-2026-trabalho2-grupoX.git)
+    cd savi-2025-2026-trabalho2-grupoX
+    ```
+
+2.  **Install Dependencies**
+
+    You can install the required libraries directly with `pip`.
+
+    ```bash
+    pip install torch torchvision scikit-learn tqdm seaborn matplotlib numpy
+    ```
+
+3.  **Run the Scripts**
+
+    Ensure the dataset folder is properly generated or configured before running Tasks 2, 3, and 4.
+
+    ```bash
+    # To run Task 1 (Optimized CNN Classifier)
+    python3 main_classification.py
+    
+    # To run Task 2 (Dataset Generation & Stats)
+    python3 main_dataset_stats.py
+    
+    # To run Task 3 (Sliding Window Detection)
+    python3 main_sliding_window.py
+    
+    # To run Task 4 (Integrated Object Detector)
+    python3 main_improved_detection.py
+    ```
 ---
-
-## Instalation
-
-COMPLETAR
-
----
-
 
 # Code Explanation
 
@@ -175,3 +197,47 @@ The confusion matrix highlights the model’s strong classification performance.
 </p>
 
 ---
+
+## Task 3: Object Detection using Sliding Window
+
+### 1. Implemented Approach
+To detect digits in the "scenes" from Task 2 without retraining the network, a classic **Sliding Window** approach was implemented.
+
+* **Algorithm:** The image is traversed by a fixed-size window (`WINDOW_SIZE`) with a defined stride (`STEP_SIZE`).
+* **Classification:** Each crop is normalized (28x28) and submitted to the CNN model trained in Task 1.
+* **Background Filtering:**
+    * **Pixel Threshold:** Windows with low pixel intensity (mostly black) are discarded prior to inference to save processing resources.
+    * **Entropy and Confidence:** Only predictions with high confidence (>0.98) and low entropy are accepted.
+* **Post-Processing:** **Non-Maximum Suppression (NMS)** was applied to eliminate redundant bounding boxes over the same object, retaining only the detection with the highest score.
+
+### 2. Quantitative Results
+Metrics obtained by comparing predictions with the *Ground Truth* (labels.txt):
+
+| Metric | Value | Description |
+| :--- | :--- | :--- |
+| **Precision** | 63.18% | Percentage of predicted boxes that were actually digits. |
+| **Recall** | 65.70% | Percentage of real digits that the model successfully found. |
+| **F1-Score** | 0.64 | Harmonic mean between Precision and Recall. |
+
+### 3. Qualitative Evaluation and Discussion
+
+#### A. Efficiency and Execution Time
+The Sliding Window approach proved to be **computationally intensive and inefficient** for real-time applications.
+* To process a single image, the CNN model needs to be executed hundreds or thousands of times (depending on the image size and `stride`).
+* Using a small `STEP_SIZE` (4px) was necessary to improve localization accuracy, but it drastically increased the inference time per image.
+
+#### B. Error Analysis (False Positives)
+A considerable number of False Positives was observed (Precision of ~63%).
+* **Main Cause:** The classifier from Task 1 was trained only on classes 0-9 and **does not possess a "Background" class**.
+* **Consequence:** When the window captures noise, textures, or partial digits, the network is "forced" to classify this content as a digit, generating hallucinations. The pixel intensity filter mitigated the issue but did not fully solve it.
+
+#### C. Localization Accuracy (Scale Invariance)
+Recall (~65%) was limited by the lack of scale invariance.
+* **Fixed Window:** The window was defined with a fixed size (e.g., 32x32).
+* **Problem:** Digits generated in Task 2 that were significantly larger than the window ended up being cropped. The model, receiving only "half" of a digit, either failed classification or assigned low confidence, leading to a missed detection.
+
+### 4. Detection Examples
+Below is a grid with visual results, where red boxes represent model predictions after NMS.
+
+![Results Grid](Tarefa_1/results_sliding_window/final_grid_view.png)
+*(Note: Ensure the image path is correct in your repository)*
