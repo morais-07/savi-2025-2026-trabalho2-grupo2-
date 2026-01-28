@@ -44,64 +44,55 @@ def testar_e_guardar_resultados(model, dataset, device, folder_name="resultados"
         threshold = 0.6 #ajustar entre 0.5 e 0.8
         mask_all_digits = (digit_probs > threshold).astype(np.uint8)
         
-        kernel = np.ones((3, 3), np.uint8)
+        kernel = np.ones((3, 3), np.uint8) #serve para limpezas 'finas'
         mask_cleaned = cv2.morphologyEx(mask_all_digits, cv2.MORPH_OPEN, kernel) 
             
-        contours, _ = cv2.findContours(mask_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(mask_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) #identificação de contornos externos
         for cnt in contours:
-            if cv2.contourArea(cnt) > 80:
-                x, y, w, h = cv2.boundingRect(cnt)
+            if cv2.contourArea(cnt) > 80:   #para descartar falsos positivos
+                x, y, w, h = cv2.boundingRect(cnt) #retângulo que envolve o contorno
         
-                    # Extrair a região correspondente no mapa de predição
+                #Extrair a região correspondente no pred map
                 roi = pred_map[y:y+h, x:x+w]
-                    # Filtrar apenas os pixels que não são fundo na ROI
+                #Filtrar apenas os pixels que não são fundo na ROI
                 roi_digits = roi[roi < 10]
         
                 if len(roi_digits) > 0:
-                        # Encontrar a classe mais comum nessa zona (Votação)
+                    #Encontrar a classe mais comum nessa zona
                     counts = np.bincount(roi_digits)
                     final_class = np.argmax(counts)
             
-                        # Desenhar apenas uma caixa para o objeto inteiro
-                    cv2.rectangle(img_color, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                    cv2.putText(img_color, f"Digito: {final_class}", (x, y-5), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            #for cnt in contours:
-                #if cv2.contourArea(cnt) > 30:
-                    #x, y, w, h = cv2.boundingRect(cnt)
-                    #cv2.rectangle(img_color, (x, y), (x+w, y+h), (0, 255, 0), 1)
-                    #cv2.putText(img_color, str(classe), (x, y-2), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
-
-        # 5. Criar comparação lado a lado (Original | Heatmap | Deteção Final)
+                    #Desenhar apenas uma caixa para o objeto inteiro
+                    cv2.rectangle(img_color, (x, y), (x+w, y+h), (0, 0, 255), 2)
+                    cv2.putText(img_color, str(final_class) , (x, y-5), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            
+        #Criar comparação lado a lado (Original | Heatmap | Deteção Final)
         img_orig_bgr = cv2.cvtColor(img_out, cv2.COLOR_GRAY2BGR)
         comparison = np.hstack((img_orig_bgr, heatmap_color, img_color))
 
-        # Guardar resultado
+        #Guardar resultado
         cv2.imwrite(f"{folder_name}/resultado_completo_{i}.png", comparison)
         
         cv2.imwrite(f"{folder_name}/resultado_{i}.png", img_color)
 
 
 def main():
-    # --- 1. CONFIGURAÇÕES GERAIS ---
-    # Define as versões que queres treinar
     VERSIONS_TO_TRAIN = ['A', 'D']
     
     args = {
         'batch_size': 16,
         'lr': 0.001,
         'epochs': 15,
-        'output_size': (32, 32), # Confirmar se a tua FCN reduz 128 -> 32
+        'output_size': (32, 32), 
         'device': torch.device("cuda" if torch.cuda.is_available() else "cpu")
     }
 
-    # Loop principal que corre as duas versões
     for version in VERSIONS_TO_TRAIN:
         print(f"\n" + "="*50)
         print(f"INICIANDO TREINO: VERSÃO {version}")
         print(f"="*50)
 
-        # --- 2. SELEÇÃO DO DATASET ---
         if version == 'A':
             root_dir = 'Dataset_Cenas_Versão_A'
             train_data = SceneDatasetA(root_dir, subset='train', output_size=args['output_size'])
@@ -111,20 +102,20 @@ def main():
             train_data = SceneDatasetD(root_dir, subset='train', output_size=args['output_size'])
             test_data = SceneDatasetD(root_dir, subset='test', output_size=args['output_size'])
 
-        # --- 3. INICIALIZAÇÃO DO MODELO ---
-        # Criamos um modelo novo em cada loop para não "contaminar" o treino
+        
         model = ModelBetterFCN() 
         trainer = TrainerFCN(model, train_data, test_data, args)
 
-        # --- 4. CICLO DE TREINO ---
         for epoch in range(args['epochs']):
             train_loss = trainer.train_epoch()
             test_loss, pixel_acc = trainer.evaluate()
             
-            print(f"Versão {version} | Epoch {epoch+1}/{args['epochs']} | "
-                  f"Loss: {train_loss:.4f} | Pixel Acc: {pixel_acc*100:.2f}%")
+            print(f"Versão {version} | Epoch {epoch+1:02d}/{args['epochs']} | "
+            f"Train Loss: {train_loss:.4f} | "
+            f"Test Loss: {test_loss:.4f} | "
+            f"Pixel Acc: {pixel_acc*100:.2f}%")
 
-        # --- 5. GUARDAR O MODELO ESPECÍFICO ---
+
         save_path = f"model_fcn_version_{version}.pth"
         trainer.save_checkpoint(save_path)
         print(f"Finalizado: Modelo Versão {version} guardado.")
@@ -132,7 +123,7 @@ def main():
         testar_e_guardar_resultados(model, test_data, args['device'], folder_name=f"resultados_ver_{version}")
 
     print("\n" + "!"*50)
-    print("TODOS OS TREINOS CONCLUÍDOS COM SUCESSO!")
+    print("TODOS OS TREINOS E TESTES CONCLUÍDOS COM SUCESSO!")
     print("!"*50)
 
 if __name__ == "__main__":
