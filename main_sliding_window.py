@@ -8,10 +8,12 @@ from torchvision.ops import nms
 from PIL import Image, ImageDraw
 import os
 import glob
+import json # Adicionado para manipulação de ficheiros JSON
 from tqdm import tqdm
 from model import ModelBetterCNN 
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report # Adicionado para gerar o relatório detalhado
 
 def load_trained_model(checkpoint_path, device):
 
@@ -149,6 +151,10 @@ def process_version(config, model, device, transform, limit=None):
 
     total_tp, total_fp, total_gt = 0, 0, 0
     grid_images, grid_titles = [], []
+    
+    # Listas para armazenar predições e valores reais para o classification_report
+    y_true_all = []
+    y_pred_all = []
 
     # ----------------------------
     # Parâmetros de deteção
@@ -212,27 +218,73 @@ def process_version(config, model, device, transform, limit=None):
         if filename in ground_truth:
             gt_boxes = ground_truth[filename] # Caixas de ground truth
             total_gt += len(gt_boxes) # Atualiza o total de dígitos reais
-            matched_gt = [False] * len(gt_boxes) # Marcações de dígitos encontrados
+            matched_gt = [False] * len(gt_boxes) # Marcações de dígitos encontrados para métricas globais
+            
+            # Lista auxiliar para controlar quais predições já foram "gastas" no alinhamento do JSON
+            temp_matched_preds = [False] * len(final_preds)
 
-            for p_box, p_lbl in final_preds: # Para cada previsão
-                found = False # Marca se encontrou um dígito correspondente
-                
-                for i, g_box in enumerate(gt_boxes): 
-                    # IOU > 0.3 é suficiente para considerar que encontrou o dígito
-                    if p_lbl == g_box[4] and calculate_iou(p_box, g_box[:4]) > 0.3: 
-                         if not matched_gt[i]: # Evita múltiplas correspondências
-                            matched_gt[i] = True # Marca como encontrado
+            # 1. Loop para calcular TP e FP (Estatísticas globais do terminal)
+            for p_idx, (p_box, p_lbl) in enumerate(final_preds):  # Para cada previsão
+                found = False  
+                for i, g_box in enumerate(gt_boxes):  # Para cada ground truth
+                    if p_lbl == g_box[4] and calculate_iou(p_box, g_box[:4]) > 0.3:   # Verifica se a predição corresponde ao ground truth
+                         if not matched_gt[i]: # Se o GT ainda não foi correspondido
+                            matched_gt[i] = True   # Marca o GT como correspondido
                             total_tp += 1 # Incrementa os verdadeiros positivos
-                            found = True
+                            found = True # Marca que encontrou um match
                             break
+                if not found: total_fp += 1 # Incrementa os falsos positivos se não encontrou match
 
-                if not found: total_fp += 1 # Incrementa os falsos positivos
+            # 2. Loop para preencher y_true e y_pred (Estatísticas detalhadas para o JSON)
+            # Alinhamos cada Ground Truth com uma predição ou marcamos como falha (-1)
+            for i, g_box in enumerate(gt_boxes): # Para cada ground truth
+                g_lbl = g_box[4] # Label do ground truth
+                y_true_all.append(g_lbl) # Valor Real
+                
+                match_idx = -1 
+                for j, (p_box, p_lbl) in enumerate(final_preds): # Para cada previsão
+                    if not temp_matched_preds[j] and p_lbl == g_lbl and calculate_iou(p_box, g_box[:4]) > 0.3: # Verifica se a predição corresponde ao ground truth
+                        match_idx = j # Índice da predição correspondente
+                        break
+                
+                if match_idx != -1: # Encontrou uma predição correspondente
+                    y_pred_all.append(final_preds[match_idx][1]) # Valor Previsto (Correto)
+                    temp_matched_preds[match_idx] = True
+                else:
+                    y_pred_all.append(-1) # Falso Negativo (O modelo não viu o dígito)
+
+            # Adicionamos as predições que sobraram como Falsos Positivos
+            for j, (p_box, p_lbl) in enumerate(final_preds):
+                if not temp_matched_preds[j]:
+                    y_true_all.append(-1) # Não havia dígito real aqui
+                    y_pred_all.append(p_lbl) # O modelo inventou uma predição
 
         draw_img.save(os.path.join(output_dir, f"res_{filename}")) # Guarda a imagem com as caixas desenhadas
 
         if len(grid_images) < 9: # Limita a 9 imagens para a grelha
             grid_images.append(np.array(draw_img)) # Adiciona a imagem à lista
             grid_titles.append(f"{filename}\nDet: {len(final_preds)}") # Título com número de deteções
+
+    # -----------------------------------------
+    # Gerar e Guardar estatísticas em JSON
+    # -----------------------------------------
+    
+    # Identifica o sufixo (A ou D) com base no nome da tarefa
+    suffix = "A" if "A" in config['name'] else "D"
+    
+    # Filtramos para obter apenas as classes dos dígitos (0-9), ignorando o background (-1)
+    unique_labels = sorted(list(set([y for y in y_true_all if y != -1] + [y for y in y_pred_all if y != -1])))
+    
+    # Gerar o dicionário do relatório de classificação
+    report_dict = classification_report(y_true_all, y_pred_all, labels=unique_labels, output_dict=True, zero_division=0)
+    
+    # Define o caminho final: ex: JSON_A/statistics_A.json
+    json_path = os.path.join(f'./results_sliding_window/statistics_{suffix}.json')
+    
+    with open(json_path, 'w') as f:
+        json.dump(report_dict, f, indent=4)
+    
+    print(f"[INFO] Estatísticas guardadas em {json_path}")
 
     precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0 # Precisão
     recall = total_tp / total_gt if total_gt > 0 else 0 # Recall
