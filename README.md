@@ -197,11 +197,10 @@ The confusion matrix highlights the model’s strong classification performance.
 </p>
 
 ---
-
 ## Task 3: Object Detection using Sliding Window
 
 ### 1. Implemented Approach
-To detect digits in the "scenes" from Task 2 without retraining the network, a classic **Sliding Window** approach was implemented.
+To detect digits in the "scenes" from Task 2 (both Version A and Version D) without retraining the network, a classic **Sliding Window** approach was implemented.
 
 * **Algorithm:** The image is traversed by a fixed-size window (`WINDOW_SIZE`) with a defined stride (`STEP_SIZE`).
 * **Classification:** Each crop is normalized (28x28) and submitted to the CNN model trained in Task 1.
@@ -211,13 +210,14 @@ To detect digits in the "scenes" from Task 2 without retraining the network, a c
 * **Post-Processing:** **Non-Maximum Suppression (NMS)** was applied to eliminate redundant bounding boxes over the same object, retaining only the detection with the highest score.
 
 ### 2. Quantitative Results
-Metrics obtained by comparing predictions with the *Ground Truth* (labels.txt):
+Metrics obtained by comparing predictions with the *Ground Truth* (`labels.txt`) for both dataset versions:
 
-| Metric | Value | Description |
-| :--- | :--- | :--- |
-| **Precision** | 63.18% | Percentage of predicted boxes that were actually digits. |
-| **Recall** | 65.70% | Percentage of real digits that the model successfully found. |
-| **F1-Score** | 0.64 | Harmonic mean between Precision and Recall. |
+| Dataset Version | Total GT | True Positives | False Positives | Precision | Recall | F1-Score |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Version A** | 1000 | 688 | 312 | **68.80%** | **68.80%** | **0.6880** |
+| **Version D** | 3994 | 2732 | 1067 | **71.91%** | **68.40%** | **0.7011** |
+
+> **Note:** Version D presented a slightly higher F1-Score despite being the "difficult" dataset, likely due to the larger sample size allowing for more consistent detections, or the digit scale in Version D aligning better with the fixed window size.
 
 ### 3. Qualitative Evaluation and Discussion
 
@@ -227,21 +227,30 @@ The Sliding Window approach proved to be **computationally intensive and ineffic
 * Using a small `STEP_SIZE` (4px) was necessary to improve localization accuracy, but it drastically increased the inference time per image.
 
 #### B. Error Analysis (False Positives)
-A considerable number of False Positives was observed (Precision of ~63%).
+A considerable number of False Positives was observed in both versions.
 * **Main Cause:** The classifier from Task 1 was trained only on classes 0-9 and **does not possess a "Background" class**.
 * **Consequence:** When the window captures noise, textures, or partial digits, the network is "forced" to classify this content as a digit, generating hallucinations. The pixel intensity filter mitigated the issue but did not fully solve it.
 
 #### C. Localization Accuracy (Scale Invariance)
-Recall (~65%) was limited by the lack of scale invariance.
+Recall (approx. 68% in both versions) was limited by the lack of scale invariance.
 * **Fixed Window:** The window was defined with a fixed size (e.g., 32x32).
 * **Problem:** Digits generated in Task 2 that were significantly larger than the window ended up being cropped. The model, receiving only "half" of a digit, either failed classification or assigned low confidence, leading to a missed detection.
 
 ### 4. Detection Examples
-Below is a grid with visual results, where red boxes represent model predictions after NMS.
+Below are the visual results for both datasets. Red boxes represent model predictions after NMS.
 
 <p align="center">
-  <img src="Photo_README/final_grid_view.png" alt="Task3" width="450"/>
+  <img src="Photo_README/figure_1.png" alt="Task3 Version A" width="450"/>
 </p>
 <p align="center">
-  <em>Figure 2 - 9 random images of the Sliding Windows approach.</em>
+  <em>Figure 1 - Detection results on <strong>Version A</strong> dataset.</em>
+</p>
+
+<br>
+
+<p align="center">
+  <img src="Photo_README/figure_2.png" alt="Task3 Version D" width="450"/>
+</p>
+<p align="center">
+  <em>Figure 2 - Detection results on <strong>Version D</strong> dataset.</em>
 </p>
