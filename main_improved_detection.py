@@ -40,7 +40,7 @@ def testar_e_guardar_resultados(model, dataset, device, folder_name="resultados"
         #Converter para imagem colorida para desenhar
         img_out = (img_tensor.squeeze().numpy() * 255).astype(np.uint8)
         img_color = cv2.cvtColor(img_out, cv2.COLOR_GRAY2BGR)
-        #AQUI
+        
         threshold = 0.6 #ajustar entre 0.5 e 0.8
         mask_all_digits = (digit_probs > threshold).astype(np.uint8)
         
