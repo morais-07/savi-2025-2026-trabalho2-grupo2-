@@ -240,7 +240,7 @@ Recall (approx. 68% in both versions) was limited by the lack of scale invarianc
 Below are the visual results for both datasets. Red boxes represent model predictions after NMS.
 
 <p align="center">
-  <img src="Photo_README/figure_1.png" alt="Task3 Version A" width="450"/>
+  <img src="Photo_README/Figure_1.png" alt="Task3 Version A" width="450"/>
 </p>
 <p align="center">
   <em>Figure 1 - Detection results on <strong>Version A</strong> dataset.</em>
@@ -249,7 +249,7 @@ Below are the visual results for both datasets. Red boxes represent model predic
 <br>
 
 <p align="center">
-  <img src="Photo_README/figure_2.png" alt="Task3 Version D" width="450"/>
+  <img src="Photo_README/Figure_2.png" alt="Task3 Version D" width="450"/>
 </p>
 <p align="center">
   <em>Figure 2 - Detection results on <strong>Version D</strong> dataset.</em>
