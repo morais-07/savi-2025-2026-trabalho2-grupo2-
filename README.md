@@ -39,9 +39,9 @@ Used for training and validating the baseline CNN classifier.
 ### 2. Synthetic "Scenes" Dataset (Tasks 2, 3 & 4)
 To simulate a realistic object detection scenario, we developed a generation script that places MNIST digits onto a larger canvas. This dataset introduces challenges such as spatial translation, multiple objects, and scale variations.
 
-* **Resolution:** Images generated at $128 \times 128$ (or $100 \times 100$) pixels.
+* **Resolution:** Images generated at $128 \times 128$ pixels.
 * **Constraints:** * Digits are strictly non-overlapping.
-    * Scale varies between approx. $22 \times 22$ and $36 \times 36$ pixels.
+    * Scale varies between $22 \times 22$ and $36 \times 36$ pixels.
 * **Ground Truth:** Stores class labels and bounding boxes $(x, y, w, h)$ for each digit.
 
 #### Dataset Versions
@@ -58,7 +58,7 @@ For this project, we focused on generating Version A and Version D. Version A wa
 
 #### Statistics & Visualization
 *(Add here specific stats from your `main_dataset_stats.py`, for example:)*
-* **Total Generated Images:** 10,000 (Train) / 2,000 (Test).
+* **Total Generated Images:** 5,000 (Train) / 1,000 (Test).
 * **Class Balance:** The generator ensures a uniform distribution of digits 0-9.
 
 ---

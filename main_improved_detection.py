@@ -39,6 +39,7 @@ def calcular_tabela_metricas(model, dataset, device):
             output_cls, output_reg = model(input_tensor)
 
             output_cls = torch.nn.functional.interpolate(output_cls, size=(128, 128), mode='bilinear')
+            output_reg = torch.nn.functional.interpolate(output_reg, size=(128, 128), mode='bilinear').squeeze(0).cpu().numpy()
             probs = torch.nn.functional.softmax(output_cls, dim=1).squeeze()
             digit_probs, _ = torch.max(probs[0:10, :, :], dim=0)
             pred_map = torch.argmax(output_cls, dim=1).squeeze().cpu().numpy()
