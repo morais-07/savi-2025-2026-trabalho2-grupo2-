@@ -73,7 +73,7 @@ class SceneDatasetA(Dataset):
         #unique_classes = np.unique(target_res)  #'resume' o conteúdo 
         #print(f"Classes no target: {unique_classes}") #para a versão A deve aparecer o dígito e o fundo
 
-        return img_tensor, target_tensor
+        return img_tensor, target_tensor, reg_tensor
 
 #Versão D - 3 a 5 dígitos de diferentes tamanhos
 class SceneDatasetD(Dataset):
