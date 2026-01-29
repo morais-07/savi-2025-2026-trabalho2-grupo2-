@@ -160,12 +160,12 @@ def process_version(config, model, device, transform, limit=None):
     # Parâmetros de deteção
     # ----------------------------
 
-    WINDOW_SIZE = (32, 32)
-    STEP_SIZE = 4
-    CONF_THRESH = 0.91 
-    ENTROPY_THRESH = 0.1
-    IOU_THRESH = 0.05
-    PIXEL_THRESHOLD = 0.03
+    WINDOW_SIZE = (32, 32) # Tamanho da janela deslizante 
+    STEP_SIZE = 4 # Passo da janela deslizante ou seja quantos pixels a janela avança a cada passo
+    CONF_THRESH = 0.91 # Limiar de confiança para aceitar uma deteção ou seja a probabilidade mínima para considerar que a predição é válida
+    ENTROPY_THRESH = 0.1 # Limiar de entropia para aceitar uma deteção ou seja o máximo de incerteza permitido
+    IOU_THRESH = 0.05 # Limiar de IoU para Non-Maximum Suppression (NMS) ou seja o máximo de sobreposição permitido entre caixas para serem consideradas distintas
+    PIXEL_THRESHOLD = 0.03 # Limiar de pixel para ignorar janelas quase vazias
 
     # ----------------------------
     # Processar cada imagem
