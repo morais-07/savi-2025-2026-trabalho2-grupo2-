@@ -10,7 +10,7 @@ class Dataset(torch.utils.data.Dataset):
         self.train = is_train
 
         # ---------------------------------
-        # NOVO: Configuração para torchvision (Tarefa 1)
+        # Configuração para torchvision (Tarefa 1)
         # ---------------------------------
         # Definimos as transformações necessárias (Converter para Tensor + Normalizar)
         self.transform = transforms.Compose([
@@ -34,10 +34,6 @@ class Dataset(torch.utils.data.Dataset):
         # Em vez de cortar listas, definimos o tamanho virtual do dataset
         self.num_examples = int(len(self.data_source) * args['percentage_examples'])
         
-        # O antigo:
-        # self.image_filenames = self.image_filenames[0:num_examples]
-        # self.labels = self.labels[0:num_examples]
-
     def __len__(self):
         # This function returns the number of examples in the dataset
         return self.num_examples
@@ -54,7 +50,7 @@ class Dataset(torch.utils.data.Dataset):
         # ----------------------------
         # Manter compatibilidade com MSELoss (One-Hot Encoding)
         # ----------------------------
-        # Aqui mantivemos a lógica exata para transformar um número num vetor
+        # Aqui manter a lógica exata para transformar um número num vetor
         
         label = [0]*10  # cria uma lista de zeros com tamanho 10
         label[label_index] = 1  # define o índice correspondente ao dígito como 1

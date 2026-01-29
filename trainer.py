@@ -1,20 +1,14 @@
-import glob
 import os
-import zipfile
 from matplotlib import pyplot as plt
 import numpy as np
-import requests
 import seaborn
 import torch
-from colorama import init as colorama_init
 from colorama import Fore, Style
-from PIL import Image
-from torchvision import transforms
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import json
 from tqdm import tqdm
-from sklearn.metrics import classification_report, confusion_matrix # New imports
+from sklearn.metrics import classification_report, confusion_matrix
 
 class Trainer():
 
@@ -23,7 +17,7 @@ class Trainer():
         # Storing arguments in class properties
         self.args = args
         self.model = model
-        #MUDEI
+        # Setup device and move model to device
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = self.model.to(self.device)
         # Create the dataloaders
@@ -69,13 +63,9 @@ class Trainer():
             num_batches = len(self.train_dataloader)
             for batch_idx, (image_tensor, label_gt_tensor) in tqdm(
                     enumerate(self.train_dataloader), total=num_batches):  # type: ignore
-                #MUDEI
+
                 image_tensor = image_tensor.to(self.device)
                 label_gt_tensor = label_gt_tensor.to(self.device)
-
-                # print('\nBatch index = ' + str(batch_idx))
-                # print('image_tensor shape: ' + str(image_tensor.shape))
-                # print('label_gt_tensor shape: ' + str(label_gt_tensor.shape))
 
                 # Compute the predicted labels
                 label_pred_tensor = self.model.forward(image_tensor)
