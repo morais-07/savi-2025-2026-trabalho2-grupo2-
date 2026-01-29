@@ -224,13 +224,28 @@ The script `main_dataset_stats.py` was used to validate the quality of the gener
 * **Image Mosaics:** Visualization of 9-image grids for both Version A and Version D.
 * **Statistical Data:** Analysis of class distribution, the average number of digits per image, and average digit dimensions. 
 <p align="center">
-  <img src="Photo_README/Dataset_Cenas_Versão_A.png" alt="Task2 Version A" width="450"/>
+  <img src="Photo_README/Dataset_Cenas_Versão_A.png" alt="Task2 Version A" width="700"/>
 </p>
 <p align="center">
-  <img src="Photo_README/Estatísticas_Dataset_Cenas_Versão_A.png" alt="Task2 Version A" width="450"/>
+  <img src="Photo_README/Estatísticas_Dataset_Cenas_Versão_A.png" alt="Task2 Version A" width="600"/>
+</p>
+   
+* **Visual Consistency:** Mosaics confirm digits are placed in random coordinates while maintaining a fixed size of $28.00 \times 28.00$ pixels.
+* **Class Balance:** The distribution is exceptionally uniform across all classes (0-9), with each digit appearing approximately 500 times in the sample.
+* **Density:** The "Number of digits per image" chart confirms a constant density of exactly one digit per scene.
+<p align="center">
+  <img src="Photo_README/Dataset_Cenas_Versão_D.png" alt="Task2 Version D" width="700"/>
 </p>
 
-> **Nota:** Os datasets gerados servem de base para o treino da arquitetura FCN na Tarefa 4 e para os testes de robustez na Tarefa 3.
+<p align="center">
+  <img src="Photo_README/Estatísticas_Dataset_Cenas_Versão_D.png" alt="Task2 Version D" width="600"/>
+</p>
+
+* **Complexity:** Visual inspection confirms multiple digits per image with varying scales and random quantities.
+* **Average Dimensions:** The calculated average digit size is **$29.01 \times 29.01$ pixels**, validating the random scaling logic.
+* **Spatial Distribution:** The distribution between 3, 4, and 5 digits per image is almost perfectly even (approx. 1,600 images each), providing a robust variety of scene densities.
+
+> > **Note:** The generated datasets serve as the foundation for training the **FCN architecture** in Task 4 and for **robustness testing** in Task 3.
 
 ---
 ---
