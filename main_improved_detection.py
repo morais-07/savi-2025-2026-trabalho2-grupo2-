@@ -7,6 +7,100 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+#função auxiliar 
+def calculate_iou(boxA, boxB):
+    # Calcula a interseção (zona comum)
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[0] + boxA[2], boxB[0] + boxB[2])
+    yB = min(boxA[1] + boxA[3], boxB[1] + boxB[3])
+    
+    interArea = max(0, xB - xA) * max(0, yB - yA)
+    # Áreas individuais
+    boxAArea = boxA[2] * boxA[3]
+    boxBArea = boxB[2] * boxB[3]
+    
+    # União = Área A + Área B - Interseção
+    iou = interArea / float(boxAArea + boxBArea - interArea) if (boxAArea + boxBArea - interArea) > 0 else 0
+    return iou
+
+#função métricas
+def calcular_tabela_metricas(model, dataset, device):
+    model.eval()
+    tp, fp, total_gt = 0, 0, 0
+    
+    with torch.no_grad():
+        for i in range(len(dataset)):
+            img_tensor, target_mask, _ = dataset[i]
+            input_tensor = img_tensor.unsqueeze(0).to(device)
+            
+            #Predição da rede
+            output_cls, output_reg = model(input_tensor)
+
+            output_cls = torch.nn.functional.interpolate(output_cls, size=(128, 128), mode='bilinear')
+            probs = torch.nn.functional.softmax(output_cls, dim=1).squeeze()
+            digit_probs, _ = torch.max(probs[0:10, :, :], dim=0)
+            pred_map = torch.argmax(output_cls, dim=1).squeeze().cpu().numpy()
+
+            #redimensionar target_mask para 128x128
+            target_mask_np = target_mask.numpy().astype(np.uint8)
+            target_mask_full = cv2.resize(target_mask_np, (128, 128), interpolation=cv2.INTER_NEAREST)
+            
+            #Ground Truth
+            gt_mask = (target_mask_full < 10).astype(np.uint8)
+            gt_contours, _ = cv2.findContours(gt_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            gt_boxes = []
+            for cnt in gt_contours:
+                if cv2.contourArea(cnt) > 100: # Filtro de área mínima para GT real em 128x128
+                    x, y, w, h = cv2.boundingRect(cnt)
+                    # Extrair a classe do mapa redimensionado para evitar erros de índice
+                    roi_gt = target_mask_full[y:y+h, x:x+w]
+                    #Ignorar fundo (10)
+                    real_pixels = roi_gt[roi_gt < 10]
+                    if len(real_pixels) > 0:
+                        real_cls = np.bincount(real_pixels).argmax()
+                        gt_boxes.append({'box': (x,y,w,h), 'class': real_cls, 'matched': False})
+            
+            total_gt += len(gt_boxes)
+
+            #Caixas previstas pelo modelo
+            # Usamos threshold de 0.7 e morfologia OPEN 5x5 para limpar falsos positivos
+            mask_binaria = (digit_probs.cpu().numpy() > 0.7).astype(np.uint8)
+            mask_cleaned = cv2.morphologyEx(mask_binaria, cv2.MORPH_OPEN, np.ones((5,5), np.uint8))
+            pred_contours, _ = cv2.findContours(mask_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            for p_cnt in pred_contours:
+                if cv2.contourArea(p_cnt) > 250:
+                    M = cv2.moments(p_cnt)
+                    if M["m00"] == 0: continue
+                    cX, cY = int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
+                    
+                    # Extraímos px, py, pw, ph da CABEÇA DE REGRESSÃO (para provar que funciona)
+                    rv = output_reg[:, cY, cX]
+                    px, py, pw, ph = int(rv[0]*128), int(rv[1]*128), int(rv[2]*128), int(rv[3]*128)
+                    
+                    roi_pred = pred_map[max(0,cY-2):min(128,cY+2), max(0,cX-2):min(128,cX+2)]
+                    roi_digits = roi_pred[roi_pred < 10]
+                    if len(roi_digits) == 0: continue
+                    pred_cls = np.bincount(roi_digits.flatten()).argmax()
+                    
+                    match_found = False
+                    for gt in gt_boxes:
+                        iou = calculate_iou((px, py, pw, ph), gt['box'])
+                        if iou > 0.35 and pred_cls == gt['class'] and not gt['matched']:
+                            tp += 1
+                            gt['matched'] = True
+                            match_found = True
+                            break
+                    if not match_found: fp += 1
+
+    #resultados finais
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / total_gt if total_gt > 0 else 0
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    
+    return total_gt, tp, fp, precision, recall, f1
+
 #transformar mapa de calor da rede em bounding boxes
 def testar_e_guardar_resultados(model, dataset, device, folder_name="resultados"):
     os.makedirs(folder_name, exist_ok=True)
