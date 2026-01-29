@@ -210,16 +210,14 @@ We opted to analyze the following versions:
 
 * **Version A:** Single digit (and scale) in a random position.
 Digits were created with a fixed size of 28x28.
-* **Version D:** Multiple digits with scale variations in random positions
+* **Version D:** Multiple digits with scale variations in random positions.
 Digits had random sizes between 22 and 36, with a random quantity of 3 to 5 per image.
-
-* **generate_data.py**
-* 
+ 
 Images are saved in a folder named 'Dataset_Cenas_Versão_A' or 'Dataset_Cenas_Versão_D'. Each of these containing 2 folders: images and labels.
 In the version with multiple digits per image, we prevented digits and bounding boxes from overlapping or exceeding the image boundaries.
 
 ### Visualization and Analysis
-* **main_dataset_stats.py**
+
 The script `main_dataset_stats.py` was used to validate the quality of the generated data through:
 * **Image Mosaics:** Visualization of 9-image grids for both Version A and Version D.
 * **Statistical Data:** Analysis of class distribution, the average number of digits per image, and average digit dimensions. 
@@ -304,4 +302,75 @@ Below are the visual results for both datasets. Red boxes represent model predic
 </p>
 <p align="center">
   <em>Figure 2 - Detection results on <strong>Version D</strong> dataset.</em>
+</p>
+
+
+---
+---
+## Task 4: Integrated Detector and Classifier (FCN)
+
+### 1. Implemented Approach
+The goal of this task was to develop a high-performance solution for simultaneous object detection and classification, overcoming the limitations of the *Sliding Window* approach. We implemented a **Fully Convolutional Network (FCN)** that processes the entire $128 \times 128$ scene in a single forward pass.
+
+### 2. Technical Implementation
+Our approach treats detection through semantic segmentation followed by contour-based localization:
+
+* **Architectural Change:** Converted all standard `Linear` layers into `Convolutional` layers to preserve spatial information.
+* **Probability Heatmaps:** The model generates an activation map for each digit class ($0-9$). We apply a **Softmax** across the channel dimension to obtain class probabilities per pixel.
+* **Post-Processing Pipeline:**
+    1.  **Thresholding:** A confidence threshold of $0.6$ is applied to the probability map.
+    2.  **Morphological Cleaning:** `Opening` operations are performed to remove pixel noise and stabilize detections.
+    3.  **Contour Detection:** Using `cv2.findContours` to extract bounding boxes from the binary masks.
+* **Evaluation (IoU):** To calculate metrics, each predicted box is compared against the *Ground Truth* using **Intersection over Union (IoU)**. A detection is only considered a **True Positive** if $IoU > 0.5$.
+
+
+
+### 3. Quantitative Results
+Below are the results obtained using the integrated FCN model.
+
+| Dataset Version | Total GT | True Positives | False Positives | Precision | Recall | F1-Score |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Version A** | 1000 | 990 | 17 | **98.31%** | **99.00%** | **0.9865** |
+| **Version D** | 3514 | 3100 | 783 | **79.84%** | **88.22%** | **0.8382** |
+
+### Comparison with Task 3 (Sliding Window)
+* **Speed:** The FCN is significantly faster as it avoids redundant calculations by sharing convolutional features across the entire image.
+* **Localization:** Unlike the fixed stride of the sliding window, our FCN provides more flexible bounding boxes through contour regression.
+* **Efficiency:** The multitask nature of the network allows for end-to-end training, resulting in a more cohesive model.
+
+**Deliverable:** `main_improved_detection.py` and `model_fcn.py`.
+
+### 4. Qualitative Evaluation and Discussion
+The transition from a Sliding Window (Task 3) to a Fully Convolutional Network (Task 4) resulted in substantial improvements across all performance metrics.
+
+#### A. Efficiency and Execution Time
+The model processes the entire $128 \times 128$ image in a single forward pass. By replacing Linear layers with Convolutional layers, the network shares computations across the entire spatial grid, making it exponentially faster and capable of real-time performance.
+
+#### B. Error Analysis (False Positives)
+As noted in the Sliding Window analysis, the original classifier lacked a "Background" class, forcing it to classify any noise or empty space as a digit (generating a high number of False Positives).
+
+In Task 4, the model was trained using a dedicated Background class (class 10). This drastically reduced "hallucinations." In Version A, False Positives dropped to nearly zero, proving the network now effectively distinguishes between empty space and actual digits.
+
+* **Remaining False Positives (D):** due to digit proximity when digits are placed very close together, their heatmap activations can merge or "bleed." The contour detector may split these merged regions into multiple small boxes, creating ghost detections. Scale Variance, because digits vary in size ($22$ to $36$ px), the fixed morphological kernels and area thresholds occasionally fail to distinguish between actual small digits and high-intensity background noise.
+
+#### C. Localization Accuracy
+The Recall of 88.22% in Version D (compared to 99.00% in Version A) suggests that some digits are being missed.
+This typically happens when digits are significantly scaled down, making their activation weaker than the $0.6$ threshold.
+Two digits are so close that they are merged into a single contour (causing the model to count them as one, missing the second ground truth).
+
+### 5. Detection Examples
+The following examples demonstrate the FCN's ability to localize digits by generating spatial heatmaps. The transition from high-intensity activations (red in the heatmap) to the final bounding boxes validates the model's precision.
+
+<p align="center">
+  <img src="resultados_ver_A/resultado_completo_0.png" alt="Task4 Version A" width="650"/>
+</p>
+<p align="center">
+  <em>Figure 3 - Detection results and heatmap on <strong>Version A</strong> dataset.</em>
+</p>
+
+<p align="center">
+  <img src="resultados_ver_D/resultado_completo_0.png" alt="Task4 Version D" width="650"/>
+</p>
+<p align="center">
+  <em>Figure 4 - Detection results and heatmap on <strong>Version D</strong> dataset.</em>
 </p>
