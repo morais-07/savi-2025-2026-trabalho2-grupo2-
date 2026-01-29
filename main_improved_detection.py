@@ -215,6 +215,11 @@ def main():
         print(f"Finalizado: Modelo Versão {version} guardado.")
         print(f"A testar modelo da Versão {version}...")
         testar_e_guardar_resultados(model, test_data, args['device'], folder_name=f"resultados_ver_{version}")
+        total_gt, tp, fp, prec, rec, f1 = calcular_tabela_metricas(model, test_data, args['device'])
+    
+        print(f"\n--- TABELA DE RESULTADOS: VERSÃO {version} ---")
+        print(f"Total GT | True Positives | False Positives | Precision | Recall | F1-Score")
+        print(f"{total_gt:8d} | {tp:14d} | {fp:15d} | {prec:.2%} | {rec:.2%} | {f1:.4f}")
 
     print("\n" + "!"*50)
     print("TODOS OS TREINOS E TESTES CONCLUÍDOS COM SUCESSO!")
