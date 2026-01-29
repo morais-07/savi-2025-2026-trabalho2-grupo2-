@@ -25,7 +25,7 @@ NUM_TEST = 1000
 
 print("A carregar dígitos originais...")
 
-to_pil = transforms.ToPILImage() #converte tensor em imagem, ACHO QUE POSSO APAGAR VERIFICAR
+to_pil = transforms.ToPILImage() #converte tensor em imagem
 
 #atribuição de variáveis a cada dataset 
 mnist_train = Dataset(args, is_train=True)  
