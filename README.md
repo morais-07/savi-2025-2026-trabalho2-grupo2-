@@ -197,6 +197,37 @@ The confusion matrix highlights the model’s strong classification performance.
 </p>
 
 ---
+---
+
+# Task 2: Generation of Dataset - "scenes" with Digits
+
+## 1. Objective
+The objective of this task was to create a more complex dataset containing one or multiple digits with different or identical dimensions. Unlike MNIST Data Set where the single digit was centered.
+
+## 2. Metodology
+A total of 5,000 training images and 1,000 test images were generated, each with a resolution of 128x128. 
+We opted to analyze the following versions:
+
+* **Version A:** Single digit (and scale) in a random position.
+Digits were created with a fixed size of 28x28.
+* **Version D:** Multiple digits with scale variations in random positions
+Digits had random sizes between 22 and 36, with a random quantity of 3 to 5 per image.
+
+* **generate_data.py**
+* 
+Images are saved in a folder named 'Dataset_Cenas_Versão_A' or 'Dataset_Cenas_Versão_D'. Each of these containing 2 folders: images and labels.
+In the version with multiple digits per image, we prevented digits and bounding boxes from overlapping or exceeding the image boundaries.
+
+### Visualization and Analysis
+* **main_dataset_stats.py**
+The script `main_dataset_stats.py` was used to validate the quality of the generated data through:
+* **Image Mosaics:** Visualization of 9-image grids for both Version A and Version D.
+* **Statistical Data:** Analysis of class distribution, the average number of digits per image, and average digit dimensions. 
+
+> **Nota:** Os datasets gerados servem de base para o treino da arquitetura FCN na Tarefa 4 e para os testes de robustez na Tarefa 3.
+
+---
+---
 ## Task 3: Object Detection using Sliding Window
 
 ### 1. Implemented Approach
