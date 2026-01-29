@@ -57,7 +57,6 @@ We generated two of the following four distinct versions to incrementally test t
 For this project, we focused on generating Version A and Version D. Version A was utilized to validate the generation pipeline and ground truth logic, while Version D was selected to challenge the model with maximum complexity.
 
 #### Statistics & Visualization
-*(Add here specific stats from your `main_dataset_stats.py`, for example:)*
 * **Total Generated Images:** 5,000 (Train) / 1,000 (Test).
 * **Class Balance:** The generator ensures a uniform distribution of digits 0-9.
 
